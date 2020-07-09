@@ -1,0 +1,27 @@
+name: 'Release a new version via Equinox'
+description: "Build, package and distribute self-updating Go apps to your customers."
+author: 'equinox.io'
+inputs: 
+  token:
+    description: "Equinox credential token"
+  application:
+    description: "Publish release for this Equinox application ID"
+  channel:
+    description: "Publish release to this channel"
+    default: "stable"
+  platforms:
+    description: "Platform list to build. e.g. 'linux_amd64,darwin_386'"
+  signing-key:
+    description: "ECDSA private key for signing the release"
+  version:
+    description: "Version string of the new release"
+  draft:
+    description: "Hold the release open for more assets"
+    default: "false"
+  package:
+    description: "Go package to build and release"
+  flags:
+    description: "Additional flags to pass to `go build`"
+runs:
+  using: 'node12'
+  main: 'dist/index.js'
