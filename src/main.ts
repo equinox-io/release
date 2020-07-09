@@ -9,12 +9,13 @@ async function run(): Promise<void> {
   try {
     // Required
     const application = core.getInput('application', { required: true })
-    const signingKey = core.getInput('signing-key', { required: true })
     const token = core.getInput('token', { required: true })
     const version = core.getInput('version', { required: true })
 
     // Optional
+    const signingKey = core.getInput('signing-key')
     const draft = core.getInput('draft')
+    const publish = core.getInput('publish')
     const flags = core.getInput('flags')
 
     // Mutated
@@ -24,7 +25,9 @@ async function run(): Promise<void> {
 
     let defaultPlatform = ''
 
-    await fs.writeFile('./equinox.key', signingKey, 'utf8')
+    if (signingKey !== '') {
+      await fs.writeFile('./equinox.key', signingKey, 'utf8')
+    }
 
     // Install the Equinox CLI tool
     const toolDir = tc.find('equinox', '1.14.0', 'x64')
@@ -73,35 +76,42 @@ async function run(): Promise<void> {
       channel = 'stable'
     }
 
-    let args = [
-      'release',
-      '--signing-key=./equinox.key',
-      `--app=${application}`,
-      `--token=${token}`,
-      `--channel=${channel}`,
-      `--platforms=${platforms}`,
-      `--version=${version}`,
-    ]
+    let args = []
 
-    if (draft === 'true') {
-      args.push('--draft')
-    }
-
-    if (signingKey !== '') {
-      // TODO: Write key to a tmp location and remove it afterwards
-      // TODO: Or set ENV
-    }
-
-    args.push('--')
-
-    if (flags !== '') {
-      args.push(flags)
-    }
-
-    if (pkg === '') {
-      args.push(pkg)
+    if (publish === 'true') {
+      args = [
+        'publish',
+        `--app=${application}`,
+        `--token=${token}`,
+        `--channel=${channel}`,
+        `--version=${version}`,
+      ]
     } else {
-      args.push('.')
+      args = [
+        'release',
+        '--signing-key=./equinox.key',
+        `--app=${application}`,
+        `--token=${token}`,
+        `--channel=${channel}`,
+        `--platforms=${platforms}`,
+        `--version=${version}`,
+      ]
+
+      if (draft === 'true') {
+        args.push('--draft')
+      }
+
+      args.push('--')
+
+      if (flags !== '') {
+        args.push(flags)
+      }
+
+      if (pkg === '') {
+        args.push(pkg)
+      } else {
+        args.push('.')
+      }
     }
 
     await exec.exec('equinox', args)

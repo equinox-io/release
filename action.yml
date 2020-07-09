@@ -22,6 +22,9 @@ inputs:
     description: "Go package to build and release"
   flags:
     description: "Additional flags to pass to `go build`"
+  publish:
+    description: "Publish the release"
+    default: "false"
 runs:
   using: 'node12'
   main: 'dist/index.js'
