@@ -1482,10 +1482,10 @@ function run() {
                 }
                 args.push('--');
                 if (pkg === '') {
-                    args.push(`${flags} ${pkg}`);
+                    args.push(`${flags} .`);
                 }
                 else {
-                    args.push(`${flags} .`);
+                    args.push(`${flags} ${pkg}`);
                 }
             }
             yield exec.exec('equinox', args);

@@ -104,9 +104,9 @@ async function run(): Promise<void> {
       args.push('--')
 
       if (pkg === '') {
-        args.push(`${flags} ${pkg}`)
-      } else {
         args.push(`${flags} .`)
+      } else {
+        args.push(`${flags} ${pkg}`)
       }
     }
 
