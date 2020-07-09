@@ -1,5 +1,8 @@
+import {promises as fs} from 'fs'
+
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
+import * as io from '@actions/io'
 import * as tc from '@actions/tool-cache'
 
 async function run(): Promise<void> {
@@ -8,17 +11,23 @@ async function run(): Promise<void> {
     const application = core.getInput('application', { required: true })
     const token = core.getInput('token', { required: true })
     const version = core.getInput('version', { required: true })
-    const pkg = core.getInput('package', { required: true })
 
     // Optional
     const signingKey = core.getInput('signing-key')
-    const flags = core.getInput('flags')
     const draft = core.getInput('draft')
+    const publish = core.getInput('publish')
+    const flags = core.getInput('flags')
 
     // Mutated
-    let platforms = core.getInput('platforms')
-    let defaultPlatform = ''
     let channel = core.getInput('channel')
+    let pkg = core.getInput('package')
+    let platforms = core.getInput('platforms')
+
+    let defaultPlatform = ''
+
+    if (signingKey !== '') {
+      await fs.writeFile('./equinox.key', signingKey, 'utf8')
+    }
 
     // Install the Equinox CLI tool
     const toolDir = tc.find('equinox', '1.14.0', 'x64')
@@ -67,35 +76,49 @@ async function run(): Promise<void> {
       channel = 'stable'
     }
 
-    let args = [
-      'release',
-      `--app=${application}`,
-      `--token=${token}`,
-      `--channel=${channel}`,
-      `--platforms=${platforms}`,
-      `--version=${version}`,
-    ]
+    let args = []
 
-    if (draft === 'true') {
-      args.push('--draft')
+    if (publish === 'true') {
+      args = [
+        'publish',
+        `--app=${application}`,
+        `--token=${token}`,
+        `--channel=${channel}`,
+        `--release=${version}`,
+      ]
+    } else {
+      args = [
+        'release',
+        '--signing-key=./equinox.key',
+        `--app=${application}`,
+        `--token=${token}`,
+        `--channel=${channel}`,
+        `--platforms=${platforms}`,
+        `--version=${version}`,
+      ]
+
+      if (draft === 'true') {
+        args.push('--draft')
+      }
+
+      args.push('--')
+
+      if (flags !== '') {
+        args.push(flags)
+      }
+
+      if (pkg === '') {
+        args.push(pkg)
+      } else {
+        args.push('.')
+      }
     }
-
-    if (signingKey !== '') {
-      // TODO: Write key to a tmp location and remove it afterwards
-      // TODO: Or set ENV
-    }
-
-    args.push('--')
-
-    if (flags !== '') {
-      args.push(flags)
-    }
-
-    args.push(pkg)
 
     await exec.exec('equinox', args)
   } catch (error) {
     core.setFailed(error.message)
+  } finally {
+    await io.rmRF('./equinox.key')
   }
 }
 

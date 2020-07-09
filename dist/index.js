@@ -1390,8 +1390,10 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __webpack_require__(747);
 const core = __importStar(__webpack_require__(470));
 const exec = __importStar(__webpack_require__(986));
+const io = __importStar(__webpack_require__(1));
 const tc = __importStar(__webpack_require__(533));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -1400,15 +1402,19 @@ function run() {
             const application = core.getInput('application', { required: true });
             const token = core.getInput('token', { required: true });
             const version = core.getInput('version', { required: true });
-            const pkg = core.getInput('package', { required: true });
             // Optional
             const signingKey = core.getInput('signing-key');
-            const flags = core.getInput('flags');
             const draft = core.getInput('draft');
+            const publish = core.getInput('publish');
+            const flags = core.getInput('flags');
             // Mutated
+            let channel = core.getInput('channel');
+            let pkg = core.getInput('package');
             let platforms = core.getInput('platforms');
             let defaultPlatform = '';
-            let channel = core.getInput('channel');
+            if (signingKey !== '') {
+                yield fs_1.promises.writeFile('./equinox.key', signingKey, 'utf8');
+            }
             // Install the Equinox CLI tool
             const toolDir = tc.find('equinox', '1.14.0', 'x64');
             if (toolDir !== '') {
@@ -1451,30 +1457,47 @@ function run() {
             if (channel === '') {
                 channel = 'stable';
             }
-            let args = [
-                'release',
-                `--app=${application}`,
-                `--token=${token}`,
-                `--channel=${channel}`,
-                `--platforms=${platforms}`,
-                `--version=${version}`,
-            ];
-            if (draft === 'true') {
-                args.push('--draft');
+            let args = [];
+            if (publish === 'true') {
+                args = [
+                    'publish',
+                    `--app=${application}`,
+                    `--token=${token}`,
+                    `--channel=${channel}`,
+                    `--release=${version}`,
+                ];
             }
-            if (signingKey !== '') {
-                // TODO: Write key to a tmp location and remove it afterwards
-                // TODO: Or set ENV
+            else {
+                args = [
+                    'release',
+                    '--signing-key=./equinox.key',
+                    `--app=${application}`,
+                    `--token=${token}`,
+                    `--channel=${channel}`,
+                    `--platforms=${platforms}`,
+                    `--version=${version}`,
+                ];
+                if (draft === 'true') {
+                    args.push('--draft');
+                }
+                args.push('--');
+                if (flags !== '') {
+                    args.push(flags);
+                }
+                if (pkg === '') {
+                    args.push(pkg);
+                }
+                else {
+                    args.push('.');
+                }
             }
-            args.push('--');
-            if (flags !== '') {
-                args.push(flags);
-            }
-            args.push(pkg);
             yield exec.exec('equinox', args);
         }
         catch (error) {
             core.setFailed(error.message);
+        }
+        finally {
+            yield io.rmRF('./equinox.key');
         }
     });
 }
