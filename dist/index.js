@@ -1481,14 +1481,11 @@ function run() {
                     args.push('--draft');
                 }
                 args.push('--');
-                if (flags !== '') {
-                    args.push(flags);
-                }
                 if (pkg === '') {
-                    args.push(pkg);
+                    args.push(`${flags} ${pkg}`);
                 }
                 else {
-                    args.push('.');
+                    args.push(`${flags} .`);
                 }
             }
             yield exec.exec('equinox', args);
