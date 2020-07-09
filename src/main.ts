@@ -1,25 +1,30 @@
+import {promises as fs} from 'fs'
+
 import * as core from '@actions/core'
 import * as exec from '@actions/exec'
+import * as io from '@actions/io'
 import * as tc from '@actions/tool-cache'
 
 async function run(): Promise<void> {
   try {
     // Required
     const application = core.getInput('application', { required: true })
+    const signingKey = core.getInput('signing-key', { required: true })
     const token = core.getInput('token', { required: true })
     const version = core.getInput('version', { required: true })
 
     // Optional
-    const signingKey = core.getInput('signing-key')
-    const flags = core.getInput('flags')
     const draft = core.getInput('draft')
+    const flags = core.getInput('flags')
 
     // Mutated
-    let platforms = core.getInput('platforms')
     let channel = core.getInput('channel')
     let pkg = core.getInput('package')
+    let platforms = core.getInput('platforms')
 
     let defaultPlatform = ''
+
+    await fs.writeFile('./equinox.key', signingKey, 'utf8')
 
     // Install the Equinox CLI tool
     const toolDir = tc.find('equinox', '1.14.0', 'x64')
@@ -70,6 +75,7 @@ async function run(): Promise<void> {
 
     let args = [
       'release',
+      '--signing-key=./equinox.key',
       `--app=${application}`,
       `--token=${token}`,
       `--channel=${channel}`,
@@ -101,6 +107,8 @@ async function run(): Promise<void> {
     await exec.exec('equinox', args)
   } catch (error) {
     core.setFailed(error.message)
+  } finally {
+    await io.rmRF('./equinox.key')
   }
 }
 

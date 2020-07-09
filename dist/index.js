@@ -1390,25 +1390,28 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs_1 = __webpack_require__(747);
 const core = __importStar(__webpack_require__(470));
 const exec = __importStar(__webpack_require__(986));
+const io = __importStar(__webpack_require__(1));
 const tc = __importStar(__webpack_require__(533));
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             // Required
             const application = core.getInput('application', { required: true });
+            const signingKey = core.getInput('signing-key', { required: true });
             const token = core.getInput('token', { required: true });
             const version = core.getInput('version', { required: true });
             // Optional
-            const signingKey = core.getInput('signing-key');
-            const flags = core.getInput('flags');
             const draft = core.getInput('draft');
+            const flags = core.getInput('flags');
             // Mutated
-            let platforms = core.getInput('platforms');
             let channel = core.getInput('channel');
             let pkg = core.getInput('package');
+            let platforms = core.getInput('platforms');
             let defaultPlatform = '';
+            yield fs_1.promises.writeFile('./equinox.key', signingKey, 'utf8');
             // Install the Equinox CLI tool
             const toolDir = tc.find('equinox', '1.14.0', 'x64');
             if (toolDir !== '') {
@@ -1453,6 +1456,7 @@ function run() {
             }
             let args = [
                 'release',
+                '--signing-key=./equinox.key',
                 `--app=${application}`,
                 `--token=${token}`,
                 `--channel=${channel}`,
@@ -1480,6 +1484,9 @@ function run() {
         }
         catch (error) {
             core.setFailed(error.message);
+        }
+        finally {
+            yield io.rmRF('./equinox.key');
         }
     });
 }
