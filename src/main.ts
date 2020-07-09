@@ -103,6 +103,12 @@ async function run(): Promise<void> {
 
       args.push('--')
 
+      if (flags !== '') {
+        for (let flag of flags.split('|')) {
+          args.push(flag.trim())
+        }
+      }
+
       if (pkg === '') {
         args.push('.')
       } else {
