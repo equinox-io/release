@@ -21,7 +21,7 @@ inputs:
   package:
     description: "Go package to build and release"
   flags:
-    description: "Additional flags to pass to `go build`"
+    description: "Additional flags to pass to `go build`, separated by |"
   publish:
     description: "Publish the release"
     default: "false"
