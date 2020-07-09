@@ -1400,15 +1400,15 @@ function run() {
             const application = core.getInput('application', { required: true });
             const token = core.getInput('token', { required: true });
             const version = core.getInput('version', { required: true });
-            const pkg = core.getInput('package', { required: true });
             // Optional
             const signingKey = core.getInput('signing-key');
             const flags = core.getInput('flags');
             const draft = core.getInput('draft');
             // Mutated
             let platforms = core.getInput('platforms');
-            let defaultPlatform = '';
             let channel = core.getInput('channel');
+            let pkg = core.getInput('package');
+            let defaultPlatform = '';
             // Install the Equinox CLI tool
             const toolDir = tc.find('equinox', '1.14.0', 'x64');
             if (toolDir !== '') {
@@ -1470,7 +1470,12 @@ function run() {
             if (flags !== '') {
                 args.push(flags);
             }
-            args.push(pkg);
+            if (pkg === '') {
+                args.push(pkg);
+            }
+            else {
+                args.push('.');
+            }
             yield exec.exec('equinox', args);
         }
         catch (error) {

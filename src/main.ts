@@ -8,7 +8,6 @@ async function run(): Promise<void> {
     const application = core.getInput('application', { required: true })
     const token = core.getInput('token', { required: true })
     const version = core.getInput('version', { required: true })
-    const pkg = core.getInput('package', { required: true })
 
     // Optional
     const signingKey = core.getInput('signing-key')
@@ -17,8 +16,10 @@ async function run(): Promise<void> {
 
     // Mutated
     let platforms = core.getInput('platforms')
-    let defaultPlatform = ''
     let channel = core.getInput('channel')
+    let pkg = core.getInput('package')
+
+    let defaultPlatform = ''
 
     // Install the Equinox CLI tool
     const toolDir = tc.find('equinox', '1.14.0', 'x64')
@@ -91,7 +92,11 @@ async function run(): Promise<void> {
       args.push(flags)
     }
 
-    args.push(pkg)
+    if (pkg === '') {
+      args.push(pkg)
+    } else {
+      args.push('.')
+    }
 
     await exec.exec('equinox', args)
   } catch (error) {
