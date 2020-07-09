@@ -1464,7 +1464,7 @@ function run() {
                     `--app=${application}`,
                     `--token=${token}`,
                     `--channel=${channel}`,
-                    `--version=${version}`,
+                    `--release=${version}`,
                 ];
             }
             else {

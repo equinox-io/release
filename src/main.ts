@@ -84,7 +84,7 @@ async function run(): Promise<void> {
         `--app=${application}`,
         `--token=${token}`,
         `--channel=${channel}`,
-        `--version=${version}`,
+        `--release=${version}`,
       ]
     } else {
       args = [
