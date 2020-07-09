@@ -101,12 +101,10 @@ async function run(): Promise<void> {
         args.push('--draft')
       }
 
-      args.push('--')
-
       if (pkg === '') {
-        args.push(`${flags} .`)
+        args.push(`-- ${flags} .`)
       } else {
-        args.push(`${flags} ${pkg}`)
+        args.push(`-- ${flags} ${pkg}`)
       }
     }
 
